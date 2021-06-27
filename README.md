@@ -5,6 +5,9 @@ An enthusiast's study on translating and customizing OpenSCAD
 files to SolidPython while solving a *domestic issue*.
 
 
+![Monitor and Vesa mount](./screenshot1.png)
+
+
 ## Requirements
 
 - OpenSCAD
