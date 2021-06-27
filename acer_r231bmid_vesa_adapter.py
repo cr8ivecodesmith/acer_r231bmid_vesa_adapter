@@ -22,12 +22,11 @@ from solid import (
 )
 
 
+# ### Configuration ###
 SCAD_OUT = f'{Path(__file__).stem}.scad'
 FRAGMENTS = 32
 
-
-# ### Configuration ###
-SHOW_MONITOR_MOUNT = True
+SHOW_MONITOR_MOUNT = False
 SHOW_VESA_MOUNT = True
 
 # Distance of the vesa holes typical are 75 100 or 200

@@ -11,7 +11,7 @@ files to SolidPython while solving a *domestic issue*.
 - SolidPython
 
 
-## Printing recommendations
+## Print settings
 
 
 To follow...
