@@ -12,6 +12,7 @@ from solid import (
     rotate,
     translate,
     linear_extrude,
+    mirror,
 
     # Operations
     union,
@@ -26,11 +27,17 @@ from solid import (
 SCAD_OUT = f'{Path(__file__).stem}.scad'
 FRAGMENTS = 32
 
-SHOW_MONITOR_MOUNT = False
+SHOW_MONITOR_MOUNT = True
+
 SHOW_VESA_MOUNT = True
+SHOW_VESA_EXTENSION = True
 
 # Distance of the vesa holes typical are 75 100 or 200
 VESA = 100
+
+# Length of mount extender (currently doesn't work well with
+# VESA = 200)
+EXTENSION_LENGTH = 150
 
 # General material thickness of the monitor mount
 THICKNESS = 3
@@ -202,12 +209,56 @@ def vesa_holes(
     return holes
 
 
+def vesa_extension(
+    thickness,
+    screw_holes_d: bool = 5,
+    holes_distance: bool = 100
+):
+    ext_length = EXTENSION_LENGTH
+    ext_sides = 20
+    curve_clearance = 70
+
+    min_width = 45 + (2 * ext_sides)
+    max_width = holes_distance + EXTRA_WIDTH
+    connector_wx = max_width - min_width
+    connector_wy = ext_length - curve_clearance
+
+    connector = translate(((-45 / 2) - ext_sides, 0, curve_clearance))(
+        rotate((-90, 0, 0))(
+            linear_extrude(height=thickness)(
+                polygon(
+                    points=(
+                        (0, 0),
+                        (0, -connector_wy),
+                        (-connector_wx, -connector_wy)
+                    ),
+                    paths=(
+                        (0, 1, 2),
+                    ),
+                    convexity=10,
+                )
+            )
+        )
+    )
+
+    p1 = union()((
+        translate(((-45 / 2) - ext_sides, 0, 0))(
+            cube((min_width, thickness, ext_length))
+        ),
+        connector,
+        mirror((1, 0, 0))(connector),
+    ))
+
+    return p1
+
+
 def vesa_mount(
     thickness,
     screw_holes_d: bool = 5,
     holes_distance: bool = 100
 ):
     w = holes_distance + EXTRA_WIDTH
+    hole_pos = [0, -1, H_OFFSET]
 
     p1 = union()((
         hull()(vesa_holes(
@@ -219,7 +270,18 @@ def vesa_mount(
             cube((45, thickness, H_OFFSET + w))
         ),
     ))
-    p2 = translate((0, -1, H_OFFSET))(vesa_holes(
+
+    if SHOW_VESA_EXTENSION:
+        hole_pos[2] = hole_pos[2] + EXTENSION_LENGTH + screw_holes_d
+
+        plate_ext = vesa_extension(
+            holes_distance=holes_distance - screw_holes_d,
+            thickness=thickness
+        )
+        p1 = translate((0, 0, EXTENSION_LENGTH + screw_holes_d))(p1)
+        p1 = hull()((p1, plate_ext))
+
+    p2 = translate(hole_pos)(vesa_holes(
         screw_holes_d=screw_holes_d,
         holes_distance=holes_distance,
         thickness=thickness + 2
@@ -237,13 +299,14 @@ def main():
         # The acer mount
         mount_plate.append(acer_mount(thickness=THICKNESS))
 
+    plate_pos = (0, -THICKNESS * 2 - 10, -12)
     if SHOW_VESA_MOUNT:
         # The vesa interface
         plate = vesa_mount(
             holes_distance=VESA,
             thickness=PLATE_THICKNESS
         )
-        plate = translate((0, -THICKNESS * 2 - 10, -12))(plate)
+        plate = translate(plate_pos)(plate)
         mount_plate.append(plate)
 
     mount_plate = union()(mount_plate)
