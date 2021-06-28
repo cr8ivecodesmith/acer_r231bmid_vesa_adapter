@@ -20,6 +20,14 @@ files to SolidPython while solving a *domestic issue*.
 To follow...
 
 
+## Hardware
+
+**Screws**
+
+- M5 x 4
+- M3 x 4
+
+
 ## Reference
 
 - [VESA Mount Adapter Bracket for Acer Monitor by pschoen](https://www.thingiverse.com/thing:3101517/files)
